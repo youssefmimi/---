@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>معرض النهيسي - الطلبات</title>
+  <style>
+    body { font-family: "Tajawal", sans-serif; background:#fdfdfd; margin:0; padding:0; color:#222; }
+    header { background:#1a1a1a; color:#f1c40f; padding:20px; text-align:center; font-size:24px; font-weight:bold; letter-spacing:1px; }
+    .container { max-width:1100px; margin:auto; padding:20px; }
+
+    .slider { position:relative; overflow:hidden; border-radius:15px; margin-bottom:30px; box-shadow:0 4px 12px rgba(0,0,0,.2); }
+    .slides { display:flex; transition:transform 0.6s ease-in-out; }
+    .slides img { width:100%; border-radius:15px; }
+    .slider-btn { position:absolute; top:50%; transform:translateY(-50%); background:rgba(0,0,0,.6); color:#fff; border:none; padding:10px 14px; cursor:pointer; border-radius:50%; }
+    .prev { left:15px; } .next { right:15px; }
+
+    .filter { text-align:center; margin-bottom:25px; }
+    .filter button { background:#fff; border:2px solid #f1c40f; padding:10px 20px; margin:5px; border-radius:25px; cursor:pointer; font-weight:bold; color:#1a1a1a; transition:0.3s; }
+    .filter button.active, .filter button:hover { background:#f1c40f; color:#1a1a1a; }
+
+    .products { display:grid; grid-template-columns:repeat(auto-fill, minmax(240px,1fr)); gap:20px; }
+    .product { background:#fff; border-radius:15px; box-shadow:0 4px 12px rgba(0,0,0,.15); padding:15px; text-align:center; transition:.3s; border:1px solid #eee; }
+    .product:hover { transform:translateY(-6px); box-shadow:0 6px 16px rgba(0,0,0,.2); }
+    .product img { width:100%; height:200px; object-fit:cover; border-radius:12px; }
+    .product h3 { margin:12px 0 8px; font-size:18px; color:#1a1a1a; }
+    .product p { color:#444; font-weight:bold; margin-bottom:10px; }
+    .product input[type=number] { width:60px; margin-left:5px; padding:5px; border:1px solid #ccc; border-radius:6px; }
+    .product button { background:#f1c40f; color:#1a1a1a; border:none; padding:10px 14px; border-radius:8px; cursor:pointer; margin-top:10px; font-weight:bold; transition:.3s; }
+    .product button:hover { background:#d4ac0d; }
+
+    .cart { margin-top:40px; background:#fff; padding:25px; border-radius:15px; box-shadow:0 4px 12px rgba(0,0,0,.15); border:1px solid #eee; }
+    .cart h2 { margin-bottom:15px; color:#1a1a1a; }
+    .cart ul { list-style:none; padding:0; margin:0; }
+    .cart li { display:flex; justify-content:space-between; margin:6px 0; align-items:center; border-bottom:1px dashed #ccc; padding-bottom:6px; }
+    .total { font-weight:bold; margin-top:15px; font-size:18px; color:#000; }
+    .cart button.remove { background:red; color:#fff; border:none; border-radius:5px; padding:4px 8px; cursor:pointer; }
+    button.checkout { width:100%; background:#1a1a1a; color:#f1c40f; padding:12px; border:none; border-radius:10px; cursor:pointer; font-size:16px; margin-top:15px; font-weight:bold; transition:.3s; }
+    button.checkout:hover { background:#333; }
+
+    .cart input { width:100%; padding:10px; margin:8px 0; border:2px solid #f1c40f; border-radius:8px; font-size:14px; }
+
+    .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,.7); justify-content:center; align-items:center; }
+    .modal-content { background:#fff; padding:25px; border-radius:15px; text-align:center; max-width:420px; box-shadow:0 4px 14px rgba(0,0,0,.25); border-top:5px solid #f1c40f; }
+    .modal-content h3 { color:#27ae60; font-size:20px; }
+    .modal-content p { font-size:16px; margin:10px 0; }
+    .modal-content span { font-weight:bold; color:#1a1a1a; font-size:18px; }
+    .modal-content button { background:#1a1a1a; color:#f1c40f; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:bold; transition:0.3s; }
+    .modal-content button:hover { background:#333; }
+  </style>
+</head>
+<body>
+
+<header>🛍️ معرض النهيسي - الطلبات</header>
+
+<div class="container">
+
+  <div class="slider">
+    <div class="slides" id="slides">
+      <img src="https://via.placeholder.com/1100x300?text=✨+عروض+المعرض+الخاصة" alt="slide1">
+      <img src="https://via.placeholder.com/1100x300?text=🆕+منتجات+جديدة" alt="slide2">
+      <img src="https://via.placeholder.com/1100x300?text=🎉+خصومات+العيد" alt="slide3">
+    </div>
+    <button class="slider-btn prev" onclick="moveSlide(-1)">❮</button>
+    <button class="slider-btn next" onclick="moveSlide(1)">❯</button>
+  </div>
+
+  <div class="filter">
+    <button class="active" onclick="filterProducts('all')">الكل</button>
+    <button onclick="filterProducts('men')">رجالي 👔</button>
+    <button onclick="filterProducts('women')">حريمي 👗</button>
+    <button onclick="filterProducts('kids')">أطفال 🧒</button>
+  </div>
+
+  <div class="products" id="products"></div>
+
+  <div class="cart">
+    <h2>🛒 السلة</h2>
+    <ul id="cart-items"></ul>
+    <p class="total">الإجمالي: <span id="total">0</span> جنيه</p>
+    <form id="checkoutForm" action="https://formspree.io/f/xkgvdykr" method="POST">
+      <input type="text" name="name" placeholder="👤 الاسم" required>
+      <input type="text" name="phone" placeholder="📞 الموبايل" required>
+      <input type="hidden" name="products" id="orderProducts">
+      <input type="hidden" name="total" id="orderTotal">
+      <input type="hidden" name="date" id="orderDate">
+      <input type="hidden" name="pickup_date" id="pickupDate">
+      <input type="hidden" name="order_id" id="orderIdField">
+      <input type="text" name="custom_product" placeholder="📝 منتج غير موجود (اختياري)">
+      <button type="submit" class="checkout">إرسال الطلب</button>
+    </form>
+  </div>
+
+  <div class="cart" style="margin-top:25px;">
+    <h2>📦 تتبع الطلبات</h2>
+    <input type="text" id="trackInput" placeholder="أدخل رقم الطلب" style="width:70%; padding:10px; border:1px solid #ccc; border-radius:8px;">
+    <button onclick="trackOrder()" style="width:25%; background:#27ae60; color:#fff; border:none; padding:10px; border-radius:8px; font-weight:bold; cursor:pointer;">🔍 تتبع</button>
+    <div id="trackResult" style="margin-top:15px; padding:10px; border:1px solid #ccc; border-radius:10px; display:none;"></div>
+  </div>
+
+</div>
+
+<div class="modal" id="successModal">
+  <div class="modal-content" id="invoice">
+    <h2 style="color:#2c3e50;">🛍️ معرض النهيسي</h2>
+    <h3 style="color:#27ae60;">✅ تم إرسال طلبك بنجاح</h3>
+    <p><b>رقم الطلب:</b> <span id="orderId"></span></p>
+    <p><b>الاسم:</b> <span id="invoiceName"></span></p>
+    <p><b>الموبايل:</b> <span id="invoicePhone"></span></p>
+    <table>
+      <thead><tr><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead>
+      <tbody id="invoiceTable"></tbody>
+    </table>
+    <p style="margin-top:10px;"><b>الإجمالي:</b> <span id="invoiceTotal"></span> جنيه</p>
+    <p><b>ميعاد الاستلام:</b> <span id="invoicePickup"></span></p>
+    <hr>
+    <p style="font-size:14px; color:#555;">شكراً لتسوقكم من <b>معرض النهيسي</b> 💖</p>
+    <button onclick="printInvoice()">🖨️ طباعة / تحميل</button>
+    <button onclick="closeModal()">تمام</button>
+  </div>
+</div>
+
+<script>
+const productsData = [
+  { name: "قميص رجالي", price: 200, img: "aba.png", category:"men" },
+  { name: "بنطلون جينز", price: 250, img: "https://via.placeholder.com/240x200?text=جينز", category:"men" },
+  { name: "تيشيرت رجالي", price: 180, img: "https://via.placeholder.com/240x200?text=تيشيرت", category:"men" },
+  { name: "فستان", price: 350, img: "https://via.placeholder.com/240x200?text=فستان", category:"women" },
+  { name: "بلوزة", price: 220, img: "https://via.placeholder.com/240x200?text=بلوزة", category:"women" },
+  { name: "جيبة", price: 200, img: "https://via.placeholder.com/240x200?text=جيبة", category:"women" },
+  { name: "تيشيرت أطفال", price: 120, img: "https://via.placeholder.com/240x200?text=تيشيرت+أطفال", category:"kids" },
+  { name: "بدلة أطفال", price: 280, img: "https://via.placeholder.com/240x200?text=بدلة+أطفال", category:"kids" },
+  { name: "فستان أطفال", price: 300, img: "https://via.placeholder.com/240x200?text=فستان+أطفال", category:"kids" }
+];
+
+const productsContainer = document.getElementById("products");
+let cart = [];
+let orderCounter = 1000;
+
+function renderProducts(filter="all"){
+  productsContainer.innerHTML = "";
+  productsData.filter(p=>filter==="all"||p.category===filter).forEach(p=>{
+    const div=document.createElement("div");
+    div.classList.add("product");
+    div.innerHTML=`<img src="${p.img}" alt="${p.name}">
+      <h3>${p.name}</h3>
+      <p>${p.price} جنيه</p>
+      <label>الكمية: <input type="number" value="1" min="1" id="qty-${p.name}"></label>
+      <button onclick="addToCart('${p.name}',${p.price})">أضف للسلة</button>`;
+    productsContainer.appendChild(div);
+  });
+}
+
+function addToCart(name,price){
+  const qty=parseInt(document.getElementById(`qty-${name}`).value)||1;
+  const exist=cart.find(i=>i.name===name);
+  if(exist) exist.qty+=qty; else cart.push({name,price,qty});
+  updateCart();
+}
+
+function updateCart(){
+  const cartItems=document.getElementById("cart-items");
+  cartItems.innerHTML="";
+  let total=0;
+  cart.forEach((item,index)=>{
+    const li=document.createElement("li");
+    li.innerHTML=`${item.name} - ${item.price} جنيه × ${item.qty} = ${item.price*item.qty} جنيه
+      <button class="remove" onclick="removeFromCart(${index})">✖</button>`;
+    cartItems.appendChild(li);
+    total+=item.price*item.qty;
+  });
+  document.getElementById("total").textContent=total;
+  document.getElementById("orderProducts").value=cart.map(i=>`${i.name} (×${i.qty})`).join(", ");
+  document.getElementById("orderTotal").value=total;
+  const today=new Date();
+  const pickup=new Date(); pickup.setDate(today.getDate()+2);
+  document.getElementById("orderDate").value=today.toLocaleDateString("ar-EG");
+  document.getElementById("pickupDate").value=pickup.toLocaleDateString("ar-EG");
+}
+
+function removeFromCart(index){ cart.splice(index,1); updateCart(); }
+function filterProducts(cat){ document.querySelectorAll(".filter button").forEach(btn=>btn.classList.remove("active")); document.querySelector(`.filter button[onclick="filterProducts('${cat}')"]`).classList.add("active"); renderProducts(cat); }
+
+renderProducts();
+
+let slideIndex=0;
+const slides=document.getElementById("slides");
+function moveSlide(step){ slideIndex=(slideIndex+step+3)%3; slides.style.transform=`translateX(${-slideIndex*100}%)`; }
+setInterval(()=>moveSlide(1),4000);
+
+const form=document.getElementById("checkoutForm");
+const modal=document.getElementById("successModal");
+
+form.addEventListener("submit",function(event){
+  event.preventDefault();
+  const data=new FormData(form);
+  const orderId="NH-"+(orderCounter++);
+  document.getElementById("orderId").textContent=orderId;
+  document.getElementById("orderIdField").value=orderId;
+  const tableBody=document.getElementById("invoiceTable");
+  tableBody.innerHTML="";
+  cart.forEach(item=>{
+    const row=document.createElement("tr");
+    row.innerHTML=`<td>${item.name}</td><td>${item.qty}</td><td>${item.price} جنيه</td><td>${item.price*item.qty} جنيه</td>`;
+    tableBody.appendChild(row);
+  });
+  document.getElementById("invoiceName").textContent=data.get("name");
+  document.getElementById("invoicePhone").textContent=data.get("phone");
+  document.getElementById("invoiceTotal").textContent=document.getElementById("orderTotal").value;
+  document.getElementById("invoicePickup").textContent=document.getElementById("pickupDate").value;
+
+  fetch(form.action,{method:"POST",body:data,headers:{'Accept':'application/json'}}).then(response=>{
+    if(response.ok){
+      const orderData={id:orderId,name:data.get("name"),phone:data.get("phone"),items:cart,total:document.getElementById("orderTotal").value,pickup:document.getElementById("pickupDate").value,date:document.getElementById("orderDate").value};
+      let orders=JSON.parse(localStorage.getItem("orders"))||[];
+      orders.push(orderData);
+      localStorage.setItem("orders",JSON.stringify(orders));
+      modal.style.display="flex";
+      form.reset(); cart=[]; updateCart();
+    } else alert("❌ حصل خطأ في الإرسال");
+  }).catch(()=>{alert("⚠️ تأكد من الاتصال بالإنترنت");});
+});
+
+function trackOrder(){
+  const id=document.getElementById("trackInput").value.trim();
+  const orders=JSON.parse(localStorage.getItem("orders"))||[];
+  const order=orders.find(o=>o.id===id);
+  const result=document.getElementById("trackResult");
+  if(order){
+    result.style.display="block";
+    result.innerHTML=`<p><b>رقم الطلب:</b> ${order.id}</p>
+      <p><b>الاسم:</b> ${order.name}</p>
+      <p><b>الموبايل:</b> ${order.phone}</p>
+      <p><b>التاريخ:</b> ${order.date}</p>
+      <p><b>ميعاد الاستلام:</b> ${order.pickup}</p>
+      <p><b>الإجمالي:</b> ${order.total} جنيه</p>
+      <hr><b>المنتجات:</b><ul>${order.items.map(i=>`<li>${i.name} × ${i.qty} = ${i.price*i.qty} جنيه</li>`).join("")}</ul>`;
+  } else { result.style.display="block"; result.innerHTML=`<p style="color:red;">❌ لم يتم العثور على الطلب</p>`; }
+}
+
+function closeModal(){ modal.style.display="none"; }
+function printInvoice(){
+    const content = document.getElementById("invoice").innerHTML;
+    const win = window.open("", "", "width=800,height=600");
+    win.document.write(`
+      <html><head><title>فاتورة الطلب</title></head>
+      <body dir="rtl" style="font-family:Tajawal,sans-serif;">${content}</body></html>
+    `);
+    win.document.close();
+    win.print();
+}
+</script>
+
+</body>
+</html>
